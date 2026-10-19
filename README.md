@@ -1,200 +1,406 @@
 # Dice & Damage - web
 
-The LÖVE app rebuilt as one three.js page, in the style of the Hall of
-Classes and Dungeon Forge. It does what the app does, with one change you
-asked for: a party of characters, each with its own set of attack presets,
-which you can save to a file and load back.
+**A damage calculator and dice roller for Dungeons & Dragons 5e and similar RPGs.**
 
-Open `DiceAndDamage-standalone.html` in a browser, or use the published
-artifact. three.js is bundled into the page, so it needs no script CDN. The
-typefaces come from Google Fonts; offline, the page falls back to Georgia
-and the system sans.
+Dice & Damage answers two questions at the table: *how likely is this attack
+to land, and how much will it hurt?* Then it rolls the dice for you. 3D
+dice are thrown onto a carved stone dais. The odds are exact, worked out from
+the rules, not guessed from simulations.
 
-## What is the same as the app
+You can keep a party of characters, each with their own saved attacks. Switching
+from your fighter's greatsword to your rogue's sneak attack takes one click. You may save your settings to load on another browser or on the Android app!
 
-- **One attack, four tabs.** The Calculator, the Attack tab and the Damage
-  tab edit the same working attack. Enemy AC and roll mode
-  are one copy too, so a change on one tab is on the others.
-- **Roll attack** on the Calculator switches to the Attack tab, as an attack
-  roll, and throws the d20 there.
-- **Damage** on the Attack tab switches to the Damage tab and rolls the
-  attack's dice. After a crit it reads **Crit damage**, sets *Double the
-  dice*, and the dice are doubled.
-- **Roll attack** on the Damage tab switches back to the Attack tab and
-  throws a new d20, so a round goes attack, damage, attack, damage without
-  leaving the two buttons. The key r does the same from any tab.
-- **Presets** open from the bar on the Calculator, the Attack roll tab and
-  the Damage tab: tap a row to load it, rename, delete (asks first), save as
-  new, or update the one you loaded. Eight per character, as in the app.
-- **The Calculator** is the exact math of the app. The box above the chart
-  leads with two numbers: the **chance to hit** with each attack against
-  the enemy AC, and the **average damage** per round. Under them, a bar
-  splits each attack into crit, hit and miss, with the spread and the
-  maximum; with more than one attack it adds the chance that at least one
-  lands. The chart shows the distribution with the cumulative curve and the
-  average, or damage against every AC from 5 to 30 in all three roll modes.
-  Drag across a chart to read exact odds. Next to Enemy AC, the page says
-  what the d20 needs to show. There is no *damage to deal* setting any more.
-- **Steppers** step once on a tap and repeat while held. Dragging off a stepper cancels it.
-- **Limits** are the app's: bonus −5 to +20, damage bonus −10 to +50, 1 to
-  4 attacks, crit on 20, 19–20 or 18–20, up to 5 dice groups and 15 dice.
-- **Eleven colour schemes.** The app's six, the same twelve colours each,
-  and five for the web only: Infernal, Feywild, Underdark, Abyssal Tide and
-  Celestial (light). The scheme button and c go forward; shift-c goes back.
-  A `session.txt` exported under a web-only scheme carries the app's first
-  scheme, since the app has only six. The scheme button shows three
-  swatches and no name. The tabs are the app's four icons, and
-  each roll button carries the icon of the tab its result lands on.
-- **Keys:** 1–4 tabs, space or enter rolls, p presets, n / a / v roll mode,
-  c next scheme, escape closes a sheet. New: r rolls a new attack, shift-c
-  goes back a scheme, k opens the party, [ and ] switch character.
+Try it out at <https://edmorais.github.io/DiceNDamage-web/> !
 
-## The party (new)
+Check also the Android app at <https://github.com/edmorais/DiceNDamage-app>
 
-The name at the top of the panel opens **The party**. On a wide screen the
-characters also stand in a column at the right of the arena: one click
-switches.
 
-- **Each character** has a name, a short note (class and level, say), a
-  dice colour, up to 8 attack presets, and its own working attack. Switching
-  brings back what that character was last holding. The situation (enemy AC, roll mode, the ability check) stays put:
-  it belongs to the fight, not to the character.
-- **Up to 12 characters.** New starts from the attack on the table. Edit
-  changes the name, note and dice colour. Names are kept unique.
-- **Save file** writes one character as `name.json`. **Save party** writes
-  everyone as `dice-and-damage-party.json`.
-- **Load file** reads a character file, a party file, or the app's own
-  `session.txt`. You can also drop a file on the page or paste its text into
-  the open party sheet. Before anything changes, the sheet says what the
-  file holds and asks: *Add* it, *Replace* the character with the same name,
-  or, for a party file, *Replace the party*.
-- **For the app** writes a character as a `session.txt` for the LÖVE app:
-  its presets, its working attack, and this page's situation and scheme.
+Made with Claude Opus 5.5.
 
-The first visit opens on three example characters, marked as examples in
-the party sheet: Brannoc (fighter), Vex (rogue) and Sister Ilse (paladin).
-The app's three default presets are among theirs.
+---
 
-**Where it is kept.** Always in this browser. On the published artifact,
-when you are signed in, it is also kept in a private document on your
-Claude account, so the same party opens on every device; the newer copy wins
-when the page opens or comes back into view. The party sheet says which
-applies. A saved party file is the copy nothing can clear.
+## Contents
 
-## The arena
+- [Getting started](#getting-started)
+- [The screen at a glance](#the-screen-at-a-glance)
+- [The four tabs](#the-four-tabs)
+- [Playing a turn](#playing-a-turn)
+- [Attack presets](#attack-presets)
+- [Your party](#your-party)
+- [Saving, backing up and moving your party](#saving-backing-up-and-moving-your-party)
+- [Colour schemes](#colour-schemes)
+- [Keyboard shortcuts](#keyboard-shortcuts)
+- [The rules it follows](#the-rules-it-follows)
+- [Questions and answers](#questions-and-answers)
 
-Every roll is thrown onto a carved dais: real d4, d6, d8, d10, d12 and d20
-shapes, with numbers on every face. The roll is decided first; the dice fly,
-bounce and roll along their path while each turns into the exact position
-that puts its result on top, upright toward you. A d4 reads at its top
-corner. Percent throws a tens die (00–90) and a units die (0–9); 00 and 0
-is 100.
+---
 
-- Advantage and disadvantage throw two d20s; the kept one is ringed and the
-  other fades.
-- A crit lights the die in the scheme's crit colour, throws sparks and a
-  ring across the dais. A natural 1 shakes and greys out.
-- All damage dice on their top face: every die glows, MAXIMUM DAMAGE.
-- Each character's dice are their own colour.
-- Tap the arena, or the button while it reads *Skip*, to land the dice at
-  once. With reduced motion on, the dice appear in place.
-- On the Calculator the arena shows the attack's dice turning slowly. On a
-  phone the arena folds away on the Calculator and opens on the roll tabs.
+## Getting started
 
-## Files
+There are two ways to open Dice & Damage:
 
-    src/rules.js      the attack, the limits, names, dice specs
-    src/damage.js     exact per-round damage distribution
-    src/rolls.js      d20 tests, damage, percentile; crypto random source
-    src/store.js      the party, presets, page state, every file format
-    src/palettes.js   the eleven schemes
-    src/dicegeo.js    die shapes, face numbers, the turn that shows a value
-    src/arena.js      the three.js scene, throws and effects
-    src/charts.js     the two SVG charts
-    src/persist.js    browser storage and the account copy
-    src/app.js        tabs, sheets, input, hand-offs
-    src/icons.js      the drawn icons
-    src/styles.css, src/index.html
-    build.py          bundles everything into dist/
-    test/             the tests below
+- **The web link.** Open the shared link in any modern browser, on a
+  computer, tablet or phone. If you are signed in to Claude, your party is
+  also saved to your account and follows you to other devices.
+- **The file.** Double-click `DiceAndDamage-standalone.html`. It opens in
+  your browser and works without an internet connection. Your party is
+  saved in that browser.
 
-## Tests
+The first time you open it, you meet three example characters: **Brannoc**
+(a fighter), **Vex** (a rogue) and **Sister Ilse** (a paladin). Use them to
+explore. Edit them, delete them, or add your own when you are ready.
 
-All tests run headless on Linux: node 22 for the logic, Playwright with
-Chromium 141 and software WebGL (SwiftShader) for the page.
+---
 
-    node test/logic.mjs                  # 111 checks, no browser
-    node test/dice.mjs                   # 743 checks, no browser
-    python3 build.py && python3 test/ui.py 1280x800
-    python3 test/ui.py 390x844 touch
-    python3 test/runtime.py              # the published page's runtime, stood in for
-    python3 test/fuzz.py 1500 7          # random input at two sizes
-    python3 test/shots.py 1440x900 out   # screenshots of every state
+## The screen at a glance
 
-**Logic, 111 checks.** Expected values come from the 5e rules and hand
-arithmetic: hit, crit and miss splits in all three modes, a natural 1 always
-missing, the crit range always hitting, damage never below zero. A Monte
-Carlo section plays 120,000 rounds for each of four attacks, built from the
-same roll functions the tabs use, and compares them with the exact
-distribution; it also proves it can fail by catching an AC off by one. The
-rest covers presets and characters (limits, unique names, deleting the
-current character, the party never empty), the page state round trip with
-hostile values, every file format, and a `session.txt` in the app's format,
-with an emoji name and three broken preset lines.
+On a computer or a tablet held sideways, the screen has two parts:
 
-**Dice, 743 checks.** For every die (d4 to d20, and the two percentile d10s)
-and every value: the faces are flat and face outward, opposite faces add up
-as on real dice, the turn the arena uses puts exactly that value on top, and
-the number on the top face reads upright from where you sit.
+- **The arena**, on the left. Your dice are thrown here, and the result
+  appears below it. Your party stands in a column on the right edge of the
+  arena: click a character to switch to them.
+- **The panel**, on the right. It holds everything you set and press:
+  - At the top, the **current character**. Tap their name to open the party.
+    The small button with three coloured dots changes the **colour scheme**.
+  - Under it, **four tabs**, shown as icons: the **calculator**, the
+    **sword** (Attack), the **burst** (Damage) and **%** (Percent).
+  - At the bottom, the **roll buttons**. Each one carries the icon of the
+    tab its result lands on.
 
-**Interface, 147 checks on a desktop with the mouse, 145 on a 390 × 844
-phone with touch.** Real clicks and taps on every kind of control: tabs,
-the scheme button through all eleven and round, both charts, the cumulative
-toggle, chart dragging, each stepper, hold to repeat, a drag off a
-stepper cancelling it, dice size cycling, the 15-dice cap, crit range and
-roll mode. Then your requests in order: Roll attack handing off with the
-Calculator's bonus and AC, and again from the Damage tab; Crit damage doubling the dice without editing the
-attack; a plain hit not doubling; advantage, fumble, the ability check, the
-d100. **After every throw the test reads the top face of each 3D die from
-the scene and compares it with the roll.** Then shared values between tabs,
-presets from all three tabs (save, rename, delete, update, load, the limit),
-characters (switch, new, edit, reorder, delete), saving and loading
-character, party and `session.txt` files, keys, a reload, and that no
-control leaves the screen or overlaps another.
+On a phone, the same parts are stacked: the character and tabs at the top,
+the arena in the middle, the settings below it, and the roll buttons at the
+bottom. The arena folds away on the Calculator tab, to leave room for the
+numbers, and opens again when you roll.
 
-**Runtime, 12 checks.** A stand-in for the artifact runtime, written to its
-type definitions: the party reaches the account copy, a newer account copy
-wins on load, files go out through the viewer's save prompt as `.json` and
-`.txt`, a declined save says so, and the standalone page downloads a real
-file instead.
+---
 
-**Fuzz.** 1,500 random taps, keys, typed names, hostile file imports and
-pauses at each of two sizes, with every rule checked after each one: values
-in range, names unique and within 24 characters, at most 8 presets and 12
-characters, the distribution summing to 1, the state surviving its own save,
-no two controls sharing an id, no sideways scroll. The final dice are read
-back against the last roll. It found one real bug: the example preset
-"Shortbow and Sneak Attack" was 25 characters, so a reload cut it. It is now
-"Shortbow, Sneak Attack", and a logic check makes the example party survive
-its own save.
+## The four tabs
 
-## What was and wasn't verified
+The Calculator, Attack and Damage tabs all work on the **same attack**. If
+you add a d6 on the Damage tab, it is there on the Calculator too. The enemy's
+AC and the roll mode are also shared, so you only set them once.
 
-**Verified:** everything above, on the final build, in headless Chromium
-with software WebGL. I looked at screenshots of every state at 1440 × 900,
-390 × 844, 844 × 390 and 820 × 1180, and in a light and a dark scheme.
+### Calculator
 
-**Not verified:**
+The Calculator tells you what to expect from your attack before you roll.
 
-- **A real phone, Safari or Firefox.** Only Chromium. three.js runs there,
-  but frame rate on a phone's GPU wasn't measured; shadows and the
-  pixel ratio drop on small screens to save work.
-- **The real artifact runtime.** The account copy and the save prompt were
-  tested against a stand-in written to the published contract. The account
-  copy stays empty until you open the page signed in; I could not read it
-  from here.
-- **Loading on the Android app.** The exported `session.txt` follows the
-  format the prototype and the LÖVE app read, and reads back with the same
-  rules here, but it wasn't loaded by the app itself.
-- **Fonts.** This machine can't reach Google Fonts, so the tests served the
-  same faces from local copies.
+**The box at the top** shows the two numbers that matter most:
+
+- **Chance to hit**: how often each attack lands against the enemy's AC.
+- **Average damage**: what you deal in a typical round, counting misses.
+
+Under them, a bar splits each attack into **crits** (bright), **hits** and
+**misses**. The line below gives the crit and miss chances, how much the
+damage varies from round to round (±), and the most you can possibly deal.
+If you make more than one attack a round, you also see the chance that **at
+least one** of them lands.
+
+**The chart** has two views:
+
+- **Distribution** shows how likely each damage total is. The dashed line
+  marks the average. Turn on **Cumulative** to add a curve that reads "this
+  much damage *or more*", from 100% down to 0%.
+- **Damage vs AC** shows your average damage against every AC from 5 to 30,
+  with one line for each roll mode. Use it to see how much advantage is
+  worth, or how fast your damage falls against heavily armoured enemies.
+
+**Drag your finger or mouse across the chart** to read exact numbers. On
+Distribution, you see the chance of dealing exactly that total, and that
+total or more. On Damage vs AC, you see the average at that AC for all three
+roll modes.
+
+**The situation** is about the fight you are in:
+
+- **Enemy AC**. Next to it, the app tells you what you need on the d20,
+  such as "8 or more".
+- **Roll mode**: Disadvantage, Normal or Advantage.
+
+**Your attack** is what gets saved in a preset:
+
+| Setting | What it is | Range |
+| --- | --- | --- |
+| Attack bonus | What you add to the d20 to hit | −5 to +20 |
+| Attacks per round | Extra Attack, two-weapon fighting and so on | 1 to 4 |
+| Damage dice | One or more groups, such as `1d8` and `3d6` | up to 5 groups, 15 dice |
+| Damage bonus | What you add to the damage dice | −10 to +50 |
+| Crit range | The d20 rolls that score a critical hit | 20, 19–20 or 18–20 |
+
+To change dice: tap a group's label (`1d8`) to cycle the die size (d4, d6,
+d8, d10, d12, d20). Use **−** and **+** to change how many. **Add dice** adds
+another group, for sneak attack, a smite, hex and the like. The **×** removes
+a group.
+
+**Roll attack** at the bottom takes you to the Attack tab and rolls there.
+
+### Attack
+
+The Attack tab rolls a d20, either for an attack or for an ability check.
+
+**Attack roll** uses your attack bonus against the enemy's AC, in the current
+roll mode. A line under the settings reminds you what you need on the die
+and how often you hit. After the roll, the app tells you whether you **hit**
+or **missed**, or shouts **Critical hit** or **Critical fail**.
+
+With advantage or disadvantage, two d20s are thrown. The one that counts is
+ringed in light, and the other fades.
+
+Press **Damage** to go straight to the Damage tab and roll your damage. After
+a critical hit the button turns into **Crit damage**, and your damage dice
+are doubled automatically.
+
+**Ability check** is for checks and saving throws. It has its own
+**Modifier** and **Target DC**, kept apart from your attack, so a Dexterity
+save never changes your weapon. Leave the DC at **Off** to just roll. With a
+DC set, the app tells you whether you pass or fail, and how likely you were
+to pass.
+
+### Damage
+
+The Damage tab rolls your attack's damage dice and adds the damage bonus.
+Damage never goes below 0.
+
+- **Double the dice** is for critical hits. It is switched on for you when
+  you come from a critical hit on the Attack tab, and stays on until you
+  switch it off.
+- Under the settings, the app shows your average damage and the lowest and
+  highest you can roll.
+- If every die lands on its highest face, you see **Maximum damage**.
+
+Press **Roll attack** to go back to the Attack tab and throw a new d20 for
+your next attack.
+
+### Percent
+
+Percent rolls a d100, thrown as two ten-sided dice: a **tens** die (00 to 90)
+and a **units** die (0 to 9). Add them together: 40 and 7 is 47. A 00 and a 0
+is 100. Use it for wild magic, random tables and anything else your DM asks
+for in percent.
+
+### Recent rolls
+
+Each rolling tab remembers your last few results. They appear under the
+result in the arena and at the bottom of the tab's settings.
+
+---
+
+## Playing a turn
+
+A typical turn with two attacks goes like this:
+
+1. On the **Calculator**, set the **Enemy AC** if you know it, and the
+   **roll mode**.
+2. Press **Roll attack**. The app switches to the Attack tab and throws the
+   d20.
+3. If you hit, press **Damage**, or **Crit damage** after a critical hit.
+   The app switches to the Damage tab and rolls your damage.
+4. For your second attack, press **Roll attack** on the Damage tab. Then
+   press **Damage** again if it hits.
+
+Each attack is rolled on its own, so you always see what each swing did.
+
+**Don't want to wait for the dice?** Tap the arena, or press the roll button
+while it reads **Skip**. The dice land at once.
+
+---
+
+## Attack presets
+
+A preset is a saved attack: the bonus, the dice, the damage bonus, the
+number of attacks and the crit range. Each character can keep up to
+**eight**. The enemy's AC and the roll mode are not part of a preset,
+because they belong to the fight.
+
+The **preset bar** sits at the top of the Calculator, the Attack roll and the
+Damage tabs. It shows the loaded preset's name and a one-line summary, such
+as "+7 to hit, 1d8 + 4, 2 attacks". Tap it to open the character's presets.
+
+| To… | Do this |
+| --- | --- |
+| Load a preset | Tap its name. The list closes and the attack is ready. |
+| Save the current attack | Tap **Save as new**, type a name, and press **Save** or Enter. |
+| Keep your changes to a loaded preset | Tap **Update** *(name)*. |
+| Rename a preset | Tap the pencil. |
+| Delete a preset | Tap the **×**, then tap **Delete** to confirm. |
+
+When you change something after loading a preset, the bar says **edited**.
+The preset itself only changes when you tap **Update**.
+
+---
+
+## Your party
+
+Tap the character's name at the top of the panel to open **The party**. On a
+large screen you can also click a character in the column beside the arena.
+Press `[` and `]` to step through the party.
+
+Each character has:
+
+- a **name** (up to 24 characters) and a short **note**, such as their class
+  and level;
+- a **dice colour**: Garnet, Emerald, Sapphire, Amethyst, Amber, Teal,
+  Obsidian or Bone. Their dice are thrown in that colour;
+- up to **eight attack presets**;
+- their **own current attack**. When you switch back to a character, they
+  are holding whatever you left them with.
+
+The enemy's AC, the roll mode and the ability check stay the same when you
+switch characters, so the whole table can roll against the same monster.
+
+**In the party list:**
+
+- Tap a character to make them the active one.
+- Tap **New character** to add one, up to twelve. A new character starts with
+  the attack you have on the table, so you can set it up and save it as
+  their first preset.
+- Tap **⋯** beside a character for more: **Edit** (name, note and dice
+  colour), **Save file**, **For the app**, the arrows to move them up or
+  down, and **Delete**. Delete asks you to confirm.
+
+Two characters can't share a name. If you use a name that is taken, the app
+adds a number, as in "Vex (2)".
+
+---
+
+## Saving, backing up and moving your party
+
+**Your party saves itself.** Every change is kept in your browser
+automatically. When you use the web link while signed in to Claude, it is
+also saved to your account, so the same party opens on your phone and your
+computer. If you changed it on two devices, the most recent version wins. The
+party list tells you where your party is being kept.
+
+**For a backup**, or to give a character to a friend, save a file:
+
+| Button | What you get |
+| --- | --- |
+| **Save party** (bottom of the party list) | Everyone, as `dice-and-damage-party.json` |
+| **Save file** (a character's ⋯ menu) | One character, as `name.json` |
+| **For the app** (a character's ⋯ menu) | One character as a `session.txt` for the Dice & Damage Android app |
+
+On the web link, your browser asks you to confirm each save. If the page
+can't save a file where you are using it, it shows the text instead, with a
+**Copy** button. Paste the text into a file and save it with the name shown.
+
+**To load a file,** open the party and tap **Load file**. You can also drag a
+file onto the page, or paste a file's text while the party list is open. The
+app reads:
+
+- a party file or a character file saved from Dice & Damage;
+- the `session.txt` file from the Dice & Damage Android app. Its presets
+  become a new character.
+
+Before anything changes, the app tells you what the file holds and asks what
+to do:
+
+- **Add to the party** adds the characters as new ones.
+- **Replace** *(name)* swaps a character for the one in the file with the
+  same name.
+- **Replace the party** swaps your whole party for the one in the file.
+
+> **Tip:** saving files from a private or incognito window, or clearing your
+> browser's data, can lose a party that lives only in the browser. Save a
+> party file now and then.
+
+---
+
+## Colour schemes
+
+Tap the button with three coloured dots, or press `c`, to change the colour
+scheme. Press Shift + `c` to go back. There are eleven:
+
+| Scheme | Mood |
+| --- | --- |
+| Dragon's Hoard | Gold and ember on dark stone (the default) |
+| Spellbook | Ink on parchment (light) |
+| Arcane Neon | Electric blue and magenta |
+| Necrotic Bloom | Sickly greens |
+| Frostbite | Ice blue and amber |
+| Ink & Bone | Black and white |
+| Infernal | Fire and brimstone |
+| Feywild | Twilight violet, pink and mint |
+| Underdark | Fungal glow in the deep dark |
+| Abyssal Tide | Deep sea green and coral |
+| Celestial | Silver, gold and sky blue (light) |
+
+The first six match the Dice & Damage Android app. The Android app only has
+those six, so a `session.txt` saved under one of the five new schemes opens
+in Dragon's Hoard.
+
+---
+
+## Keyboard shortcuts
+
+On a computer:
+
+| Key | Action |
+| --- | --- |
+| `1` `2` `3` `4` | Calculator, Attack, Damage, Percent |
+| Space or Enter | Roll (or Skip while dice are in the air) |
+| `r` | Roll a new attack, from any tab |
+| `a` / `n` / `v` | Advantage / Normal / Disadvantage |
+| `p` | Open or close the presets |
+| `k` | Open or close the party |
+| `[` / `]` | Previous / next character |
+| `c` / Shift + `c` | Next / previous colour scheme |
+| Esc | Close the open sheet, or cancel typing a name |
+
+Hold a **−** or **+** button to change a value quickly. If you slide off the
+button before you let go, nothing changes.
+
+---
+
+## The rules it follows
+
+Dice & Damage follows the D&D 5e rules for attacks:
+
+- A **natural 20** always hits and is a critical hit. With a wider crit
+  range (19–20 or 18–20), those rolls are critical hits too.
+- A **natural 1** always misses, whatever your bonus.
+- Otherwise, you hit when the d20 plus your attack bonus is **equal to or
+  higher than** the enemy's AC.
+- **Advantage** keeps the higher of two d20s. **Disadvantage** keeps the
+  lower.
+- A **critical hit** doubles the damage **dice**, not the damage bonus.
+- **Damage** is never below 0, even with a negative bonus.
+- **Ability checks and saving throws** have no critical hits. A natural 20 or
+  a natural 1 is pointed out, but only the total against the DC decides.
+
+The chances on the Calculator are worked out exactly from these rules, for
+every possible roll of every die. The dice in the arena use your device's
+secure random number generator, so every face is equally likely.
+
+---
+
+## Questions and answers
+
+**The dice landed on a number. Is that really the result?**
+Yes. The result is decided the moment you press the button, and the die
+always comes to rest showing it. A d4 shows its result at the top point.
+
+**Why doesn't Double the dice switch off by itself?**
+So you can roll extra crit damage, such as a smite, after the first roll. It
+is set for you each time you press Damage on the Attack tab: on after a
+critical hit, off after a normal hit.
+
+**I changed my attack and the preset bar says "edited". Did I lose the
+preset?**
+No. The preset is unchanged until you tap **Update** in the preset list. Tap
+the preset's name to load it again as it was.
+
+**Can I use it on my phone at the table?**
+Yes. It works in portrait and landscape, and every control is sized for
+fingers. The web link keeps your party in step between your phone and your
+computer when you are signed in to Claude.
+
+**The fonts look different when I'm offline.**
+The standalone file loads its typefaces from the internet. Without a
+connection it uses similar fonts that are already on your device. Everything
+else works the same.
+
+**How do I start over?**
+Delete the characters you don't want in the party list. The party always
+keeps at least one character. To keep a copy first, use **Save party**.
+
+---
+
+*For how the app is built and tested, see `DEVELOPERS.md`.*
