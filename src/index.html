@@ -1,0 +1,32 @@
+<title>Dice &amp; Damage</title>
+<meta name="description" content="Exact damage odds, a 3D dice arena, and attack presets for every character in your party.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Cinzel:wght@600;700&display=swap">
+<style>/*CSS*/</style>
+<div class="app t0" id="app">
+  <section class="stage" id="stage" aria-label="Dice arena">
+    <canvas id="arena" aria-hidden="true"></canvas>
+    <header class="masthead">
+      <p class="eyebrow">Dungeons &amp; Dragons · 5e rules</p>
+      <h1>Dice &amp; Damage</h1>
+      <p class="sub" id="mast-sub"></p>
+    </header>
+    <nav class="rail" id="rail" aria-label="Party"></nav>
+    <div class="result" id="result" aria-live="polite"></div>
+  </section>
+  <aside class="panel" id="panel">
+    <div class="charbar">
+      <button class="who" id="who" type="button" aria-haspopup="dialog" data-act="party"></button>
+      <button class="scheme" id="scheme" type="button" data-act="scheme"></button>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Tabs"></nav>
+    <div class="scroll" id="scroll"></div>
+    <div class="actions" id="actions"></div>
+  </aside>
+</div>
+<div class="sheet-wrap" id="sheet" hidden></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="drop-hint" id="drop">Drop a party file</div>
+<input type="file" id="file" accept=".json,.txt,application/json,text/plain" hidden>
+<script>/*JS*/</script>
