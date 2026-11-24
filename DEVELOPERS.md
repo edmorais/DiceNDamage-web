@@ -115,8 +115,28 @@ is 100.
     src/app.js        tabs, sheets, input, hand-offs
     src/icons.js      the drawn icons
     src/styles.css, src/index.html
-    build.py          bundles everything into dist/
+    src/pwa/          manifest, service worker, icons (make_icon.py draws the SVGs)
+    build.py          bundles everything into dist/, and the installable app into docs/
     test/             the tests below
+
+## Installable app (PWA)
+
+`python build.py` also writes `docs/`, ready for GitHub Pages (Settings →
+Pages → deploy from branch `master`, folder `/docs`). `docs/index.html` is
+the standalone page plus a web manifest and a service worker. Chrome on
+Android offers *Install app* from the menu, and the app then opens full
+screen from its own icon. iOS Safari installs it with *Share → Add to Home
+Screen*.
+
+- The service worker fetches the page network first, so a new build shows on
+  the next launch with a connection. Offline, the cached copy opens. Google
+  Fonts are cached on first use.
+- Each build stamps `sw.js` with a hash of the page, so old caches are
+  dropped.
+- To change the icon, edit `src/pwa/make_icon.py`, run it, and render the
+  PNGs (192, 512, maskable 512, apple-touch 180) from the two SVGs.
+- Installing needs https or localhost. A page opened from disk skips the
+  service worker.
 
 ## Tests
 
